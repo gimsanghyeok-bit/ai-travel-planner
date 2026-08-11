@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+@layer components {
+  .chip {
+    @apply rounded-pill px-3.5 py-2 text-[13px] font-bold cursor-pointer border border-border bg-white text-ink;
+  }
+  .chip-on {
+    @apply border-accent bg-accent text-white;
+  }
+  .section-label {
+    @apply text-xs font-bold text-ink-soft uppercase tracking-wide;
+  }
+  .card {
+    @apply bg-white border border-canvas rounded-2xl;
+  }
+}
