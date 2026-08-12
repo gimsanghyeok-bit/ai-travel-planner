@@ -193,11 +193,24 @@ export function fmtWon(n: number): string {
   return n.toLocaleString('ko-KR') + '원';
 }
 
-export function computeBudget(selectedFlight: number, selectedHotel: number, selectedCar: number) {
-  const flight = FLIGHT_OPTIONS[selectedFlight].price;
-  const hotel = HOTEL_OPTIONS[selectedHotel].price;
-  const car = CAR_OPTIONS[selectedCar].price;
-  const budget: Record<string, number> = { 항공료: flight, 숙박비: hotel, 렌터카비: car, 식비: 320000, 입장료: 150000, 현지교통비: 90000 };
+export function computeBudget(
+  bookings: { flight: BookingOption[]; hotel: BookingOption[]; car: BookingOption[] },
+  selectedFlight: number,
+  selectedHotel: number,
+  selectedCar: number,
+  extra?: { food?: number; admission?: number; localTransit?: number }
+) {
+  const flight = bookings.flight[selectedFlight]?.price ?? 0;
+  const hotel = bookings.hotel[selectedHotel]?.price ?? 0;
+  const car = bookings.car[selectedCar]?.price ?? 0;
+  const budget: Record<string, number> = {
+    항공료: flight,
+    숙박비: hotel,
+    렌터카비: car,
+    식비: extra?.food ?? 320000,
+    입장료: extra?.admission ?? 150000,
+    현지교통비: extra?.localTransit ?? 90000,
+  };
   const total = Object.values(budget).reduce((a, b) => a + b, 0);
   return { budget, total };
 }

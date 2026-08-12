@@ -24,9 +24,9 @@ const config: Config = {
         'warn-bg': '#FBECE6',
       },
       fontFamily: {
-        heading: ['var(--font-bitter)', 'serif'],
-        body: ['var(--font-nunito)', 'sans-serif'],
-      },
+  heading: ['Bitter', 'serif'],
+  body: ['"Nunito Sans"', 'sans-serif'],
+},
       borderRadius: {
         pill: '999px',
       },

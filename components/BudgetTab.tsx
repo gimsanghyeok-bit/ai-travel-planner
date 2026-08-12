@@ -5,7 +5,7 @@ import type { Action, AppState } from '@/lib/reducer';
 import { computeBudget, fmtWon } from '@/lib/mockData';
 
 export default function BudgetTab({ state, dispatch }: { state: AppState; dispatch: Dispatch<Action> }) {
-  const { budget, total } = computeBudget(state.selectedFlight, state.selectedHotel, state.selectedCar);
+  const { budget, total } = computeBudget(state.bookings, state.selectedFlight, state.selectedHotel, state.selectedCar, state.extraBudget);
   const expenseTotal = state.expenses.reduce((a, e) => a + e.amount, 0);
   const payers = Array.from(new Set(state.expenses.map((e) => e.payer)));
   const perPerson = expenseTotal / Math.max(payers.length, 1);

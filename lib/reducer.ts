@@ -1,9 +1,10 @@
 import {
   buildDays, buildLegs, sortAndReindex, CHECKLIST_DEFAULT, SHOPPING_LIST_DEFAULT,
   DEFAULT_EXPENSES, DEFAULT_FOOD_LOGS, RAIN_ALT_TARGET, RAIN_ALT_REPLACEMENT,
+  FLIGHT_OPTIONS, HOTEL_OPTIONS, CAR_OPTIONS,
 } from './mockData';
 import type {
-  Category, ChecklistItem, Companion, DayPlan, Expense, FoodLog, MyViewKey,
+  BookingOption, Category, ChecklistItem, Companion, DayPlan, Expense, FoodLog, MyViewKey,
   Pace, ShoppingItem, TabKey, TravelStyle, TripForm,
 } from './types';
 
@@ -34,6 +35,10 @@ export interface AppState {
   bookingExpanded: { flight: boolean; hotel: boolean; car: boolean };
   addingPlace: boolean;
   newPlace: { time: string; name: string; category: Category };
+  isGenerating: boolean;
+  generateError: string | null;
+  bookings: { flight: BookingOption[]; hotel: BookingOption[]; car: BookingOption[] };
+  extraBudget: { food: number; admission: number; localTransit: number };
 }
 
 export const initialState: AppState = {
@@ -63,6 +68,10 @@ export const initialState: AppState = {
   bookingExpanded: { flight: false, hotel: false, car: false },
   addingPlace: false,
   newPlace: { time: '', name: '', category: '관광' },
+  isGenerating: false,
+  generateError: null,
+  bookings: { flight: FLIGHT_OPTIONS, hotel: HOTEL_OPTIONS, car: CAR_OPTIONS },
+  extraBudget: { food: 320000, admission: 150000, localTransit: 90000 },
 };
 
 export type Action =
@@ -72,6 +81,9 @@ export type Action =
   | { type: 'TOGGLE_STYLE'; value: TravelStyle }
   | { type: 'SELECT_PACE'; value: Pace }
   | { type: 'GENERATE' } | { type: 'BACK_TO_ONBOARD' }
+  | { type: 'GENERATE_START' }
+  | { type: 'GENERATE_SUCCESS'; days: DayPlan[]; bookings: AppState['bookings']; extraBudget: AppState['extraBudget'] }
+  | { type: 'GENERATE_FAIL'; message: string }
   | { type: 'SET_TAB'; value: TabKey }
   | { type: 'GO_HOME_ITINERARY' } | { type: 'GO_TAB_BOOKING' } | { type: 'GO_TAB_BUDGET' } | { type: 'GO_HOME_CHECKLIST' }
   | { type: 'SET_SUBVIEW'; value: 'timeline' | 'map' }
@@ -128,6 +140,25 @@ export function reducer(state: AppState, action: Action): AppState {
       return { ...state, form: { ...state.form, pace: action.value } };
     case 'GENERATE':
       return { ...state, stage: 'app', days: buildDays(state.form.pace), activeTab: 'home', activeDayIndex: 0 };
+    case 'GENERATE_START':
+      return { ...state, isGenerating: true, generateError: null };
+    case 'GENERATE_SUCCESS':
+      return {
+        ...state,
+        stage: 'app',
+        days: action.days,
+        bookings: action.bookings,
+        extraBudget: action.extraBudget,
+        activeTab: 'home',
+        activeDayIndex: 0,
+        selectedFlight: 0,
+        selectedHotel: 0,
+        selectedCar: 0,
+        isGenerating: false,
+        generateError: null,
+      };
+    case 'GENERATE_FAIL':
+      return { ...state, isGenerating: false, generateError: action.message };
     case 'BACK_TO_ONBOARD':
       return { ...state, stage: 'onboard' };
     case 'SET_TAB':

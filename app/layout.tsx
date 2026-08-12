@@ -1,9 +1,5 @@
 import type { Metadata } from 'next';
-import { Bitter, Nunito_Sans } from 'next/font/google';
 import './globals.css';
-
-const bitter = Bitter({ subsets: ['latin'], weight: ['500', '600', '700'], variable: '--font-bitter' });
-const nunito = Nunito_Sans({ subsets: ['latin'], weight: ['400', '600', '700', '800'], variable: '--font-nunito' });
 
 export const metadata: Metadata = {
   title: 'AI 여행 플래너',
@@ -13,7 +9,14 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
-      <body className={`${bitter.variable} ${nunito.variable} font-body bg-canvas`}>{children}</body>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700&family=Nunito+Sans:wght@400;600;700;800&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="font-body bg-canvas">{children}</body>
     </html>
   );
 }

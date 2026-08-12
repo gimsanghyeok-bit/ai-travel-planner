@@ -8,7 +8,7 @@ import { buildShareText, exportToPdf } from '@/lib/exportUtils';
 
 export default function ShareView({ state, days, dispatch }: { state: AppState; days: DayPlan[]; dispatch: Dispatch<Action> }) {
   const totalPlaces = days.reduce((a, d) => a + d.places.length, 0);
-  const { total } = computeBudget(state.selectedFlight, state.selectedHotel, state.selectedCar);
+  const { total } = computeBudget(state.bookings, state.selectedFlight, state.selectedHotel, state.selectedCar, state.extraBudget);
 
   const trip = {
     destination: state.form.destination,

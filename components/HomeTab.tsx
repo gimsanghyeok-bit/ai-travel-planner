@@ -3,13 +3,15 @@
 import type { Dispatch } from 'react';
 import type { Action, AppState } from '@/lib/reducer';
 import type { DayPlan } from '@/lib/types';
-import { computeBudget, fmtWon, FLIGHT_OPTIONS, HOTEL_OPTIONS, CAR_OPTIONS } from '@/lib/mockData';
+import { computeBudget, fmtWon } from '@/lib/mockData';
 
 export default function HomeTab({ state, days, dispatch }: { state: AppState; days: DayPlan[]; dispatch: Dispatch<Action> }) {
   const activeDay = days[state.activeDayIndex] ?? days[0];
-  const { total: budgetTotal } = computeBudget(state.selectedFlight, state.selectedHotel, state.selectedCar);
+  const { total: budgetTotal } = computeBudget(state.bookings, state.selectedFlight, state.selectedHotel, state.selectedCar, state.extraBudget);
   const bookingTotal =
-    FLIGHT_OPTIONS[state.selectedFlight].price + HOTEL_OPTIONS[state.selectedHotel].price + CAR_OPTIONS[state.selectedCar].price;
+    (state.bookings.flight[state.selectedFlight]?.price ?? 0) +
+    (state.bookings.hotel[state.selectedHotel]?.price ?? 0) +
+    (state.bookings.car[state.selectedCar]?.price ?? 0);
   const checklistDone = state.checklist.filter((c) => c.checked).length;
 
   const cards: { label: string; value: string; onClick: () => void }[] = [

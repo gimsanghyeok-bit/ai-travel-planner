@@ -6,37 +6,45 @@ import { buildUserMessage, GenerateItineraryInput, SYSTEM_PROMPT } from './syste
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MODEL_ID = 'claude-sonnet-5';
 
-const TipSchema = z.object({ mustTryMenu: z.string(), waitingTip: z.string(), note: z.string() });
+const TipSchema = z.object({
+  mustTryMenu: z.string().optional().default(''),
+  waitingTip: z.string().optional().default(''),
+  note: z.string().optional().default(''),
+});
 const PlaceSchema = z.object({
-  order: z.number(),
+  order: z.coerce.number(),
   time: z.string(),
   name: z.string(),
-  category: z.enum(['sightseeing', 'food', 'shopping', 'healing', 'hotspot', 'transit']),
-  durationLabel: z.string(),
-  travelMode: z.string(),
-  travelTimeLabel: z.string(),
-  tip: TipSchema,
+  category: z.string(),
+  durationLabel: z.string().optional().default(''),
+  travelMode: z.string().optional().default(''),
+  travelTimeLabel: z.string().optional().default(''),
+  tip: TipSchema.optional().default({ mustTryMenu: '', waitingTip: '', note: '' }),
 });
 const DaySchema = z.object({
-  dayIndex: z.number(),
+  dayIndex: z.coerce.number(),
   date: z.string(),
-  weatherSummary: z.string(),
-  weatherAlert: z.string().nullable(),
-  breakTimeAlert: z.string().nullable(),
+  weatherSummary: z.string().optional().default(''),
+  weatherAlert: z.string().nullable().optional().default(null),
+  breakTimeAlert: z.string().nullable().optional().default(null),
   places: z.array(PlaceSchema),
 });
-const BookingItemSchema = z.object({ name: z.string(), description: z.string(), price: z.number() });
+const BookingItemSchema = z.object({ name: z.string(), description: z.string().optional().default(''), price: z.coerce.number().optional().default(0) });
 const ItinerarySchema = z.object({
   days: z.array(DaySchema),
   bookings: z.object({
-    flight: z.array(BookingItemSchema),
-    hotel: z.array(BookingItemSchema),
-    car: z.array(BookingItemSchema),
-  }),
+    flight: z.array(BookingItemSchema).optional().default([]),
+    hotel: z.array(BookingItemSchema).optional().default([]),
+    car: z.array(BookingItemSchema).optional().default([]),
+  }).optional().default({ flight: [], hotel: [], car: [] }),
   budgetEstimate: z.object({
-    flight: z.number(), hotel: z.number(), car: z.number(),
-    food: z.number(), admission: z.number(), localTransit: z.number(),
-  }),
+    flight: z.coerce.number().optional().default(0),
+    hotel: z.coerce.number().optional().default(0),
+    car: z.coerce.number().optional().default(0),
+    food: z.coerce.number().optional().default(0),
+    admission: z.coerce.number().optional().default(0),
+    localTransit: z.coerce.number().optional().default(0),
+  }).optional().default({ flight: 0, hotel: 0, car: 0, food: 0, admission: 0, localTransit: 0 }),
 });
 
 export async function POST(req: NextRequest) {
@@ -48,7 +56,7 @@ export async function POST(req: NextRequest) {
 
     const message = await anthropic.messages.create({
       model: MODEL_ID,
-      max_tokens: 4096,
+      max_tokens: 8192,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: buildUserMessage(body) }],
     });
@@ -65,6 +73,8 @@ export async function POST(req: NextRequest) {
 
     const validation = ItinerarySchema.safeParse(parsed);
     if (!validation.success) {
+      console.error('Itinerary schema validation failed:', JSON.stringify(validation.error.issues, null, 2));
+      console.error('Raw AI response was:', rawText);
       return NextResponse.json({ error: '스키마 불일치', issues: validation.error.issues }, { status: 502 });
     }
 

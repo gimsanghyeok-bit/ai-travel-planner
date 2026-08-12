@@ -2,7 +2,7 @@
 
 import type { Dispatch } from 'react';
 import type { Action, AppState } from '@/lib/reducer';
-import { CAR_OPTIONS, FLIGHT_OPTIONS, fmtWon, HOTEL_OPTIONS } from '@/lib/mockData';
+import { fmtWon } from '@/lib/mockData';
 import type { BookingOption } from '@/lib/types';
 
 function BookingSection({
@@ -44,7 +44,11 @@ function BookingSection({
 }
 
 export default function BookingTab({ state, dispatch }: { state: AppState; dispatch: Dispatch<Action> }) {
-  const total = FLIGHT_OPTIONS[state.selectedFlight].price + HOTEL_OPTIONS[state.selectedHotel].price + CAR_OPTIONS[state.selectedCar].price;
+  const { flight, hotel, car } = state.bookings;
+  const total =
+    (flight[state.selectedFlight]?.price ?? 0) +
+    (hotel[state.selectedHotel]?.price ?? 0) +
+    (car[state.selectedCar]?.price ?? 0);
 
   return (
     <div className="flex-1 overflow-auto px-5 pt-1 pb-6">
@@ -55,7 +59,7 @@ export default function BookingTab({ state, dispatch }: { state: AppState; dispa
 
       <BookingSection
         title="항공권 추천"
-        options={FLIGHT_OPTIONS}
+        options={flight}
         selectedIndex={state.selectedFlight}
         expanded={state.bookingExpanded.flight}
         onSelect={(i) => dispatch({ type: 'SELECT_FLIGHT', value: i })}
@@ -63,7 +67,7 @@ export default function BookingTab({ state, dispatch }: { state: AppState; dispa
       />
       <BookingSection
         title="숙소 추천"
-        options={HOTEL_OPTIONS}
+        options={hotel}
         selectedIndex={state.selectedHotel}
         expanded={state.bookingExpanded.hotel}
         onSelect={(i) => dispatch({ type: 'SELECT_HOTEL', value: i })}
@@ -71,7 +75,7 @@ export default function BookingTab({ state, dispatch }: { state: AppState; dispa
       />
       <BookingSection
         title="렌터카 추천"
-        options={CAR_OPTIONS}
+        options={car}
         selectedIndex={state.selectedCar}
         expanded={state.bookingExpanded.car}
         onSelect={(i) => dispatch({ type: 'SELECT_CAR', value: i })}

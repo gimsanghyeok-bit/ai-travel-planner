@@ -3,10 +3,43 @@
 import type { Dispatch } from 'react';
 import type { Action, AppState } from '@/lib/reducer';
 import { COMPANIONS, PACE_DESC, PACE_LABELS, STYLES } from '@/lib/mockData';
+import { mapClaudeBookings, mapClaudeExtraBudget, mapClaudeResponseToDays } from '@/lib/mapClaudeResponse';
 import type { Pace } from '@/lib/types';
 
 export default function OnboardingScreen({ state, dispatch }: { state: AppState; dispatch: Dispatch<Action> }) {
   const { form } = state;
+
+  async function handleGenerate() {
+    dispatch({ type: 'GENERATE_START' });
+    try {
+      const res = await fetch('/api/generate-itinerary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          destination: form.destination,
+          nights: form.nights,
+          days: form.days,
+          companionType: form.companion,
+          styles: form.style,
+          pace: form.pace,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        const issueText = Array.isArray(data?.issues)
+          ? data.issues.slice(0, 3).map((i: any) => `${i.path.join('.')}: ${i.message}`).join(' / ')
+          : '';
+        throw new Error(issueText ? `${data?.error} — ${issueText}` : (data?.error ?? `요청 실패 (${res.status})`));
+      }
+      const days = mapClaudeResponseToDays(data);
+      const bookings = mapClaudeBookings(data);
+      const extraBudget = mapClaudeExtraBudget(data);
+      dispatch({ type: 'GENERATE_SUCCESS', days, bookings, extraBudget });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
+      dispatch({ type: 'GENERATE_FAIL', message: `AI 일정 생성에 실패했습니다: ${message}` });
+    }
+  }
 
   return (
     <div className="flex-1 overflow-auto">
@@ -82,11 +115,18 @@ export default function OnboardingScreen({ state, dispatch }: { state: AppState;
         </div>
         <p className="mt-2 text-[13px] text-ink-soft leading-relaxed">{PACE_DESC[form.pace]}</p>
 
+        {state.generateError && (
+          <div className="mt-4 bg-warn-bg text-warn rounded-xl px-3.5 py-3 text-[13px] leading-relaxed">
+            {state.generateError}
+          </div>
+        )}
+
         <button
-          className="mt-7 w-full bg-accent text-white rounded-2xl py-4 text-base font-extrabold"
-          onClick={() => dispatch({ type: 'GENERATE' })}
+          className="mt-7 w-full bg-accent text-white rounded-2xl py-4 text-base font-extrabold disabled:opacity-60"
+          onClick={handleGenerate}
+          disabled={state.isGenerating}
         >
-          AI 일정 만들기
+          {state.isGenerating ? 'AI가 일정을 만드는 중... (최대 1분)' : 'AI 일정 만들기'}
         </button>
       </div>
     </div>
