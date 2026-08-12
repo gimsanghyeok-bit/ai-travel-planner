@@ -3,11 +3,13 @@
 import type { Dispatch } from 'react';
 import type { Action, AppState } from '@/lib/reducer';
 import { ESSENTIALS, fmtWon, TRANSIT_PASSES } from '@/lib/mockData';
+import { formatCurrency, guessCurrency } from '@/lib/currency';
 
 export default function InfoView({ state, dispatch }: { state: AppState; dispatch: Dispatch<Action> }) {
   const done = state.checklist.filter((c) => c.checked).length;
   const krwNum = parseInt(String(state.currencyKrw).replace(/[^0-9]/g, ''), 10) || 0;
-  const jpy = Math.round(krwNum / 9.3).toLocaleString('ko-KR') + '엔';
+  const currency = guessCurrency(state.form.destination);
+  const converted = formatCurrency(krwNum * currency.krwToUnit, currency);
 
   return (
     <div>
@@ -40,11 +42,11 @@ export default function InfoView({ state, dispatch }: { state: AppState; dispatc
         onChange={(e) => dispatch({ type: 'SET_CURRENCY', value: e.target.value })}
       />
       <div className="mt-2.5 bg-section rounded-xl p-3.5 flex items-center justify-between">
-        <span className="text-[13px] text-ink-soft">일본 엔 (JPY) 환산</span>
-        <span className="text-lg font-extrabold">{jpy}</span>
+        <span className="text-[13px] text-ink-soft">{currency.name} ({currency.code}) 환산</span>
+        <span className="text-lg font-extrabold">{converted}</span>
       </div>
       <p className="mt-2.5 text-xs text-[#574F47] leading-relaxed">
-        소규모 식당·시장은 카드 결제가 안 되는 곳이 많아 현금 30~40%, 카드 60~70% 비중을 권장합니다.
+        환율은 참고용 추정치이며 실제 환율과 다를 수 있어요. 소규모 식당·시장은 카드 결제가 안 되는 곳이 많아 현금 30~40%, 카드 60~70% 비중을 권장합니다.
       </p>
 
       <div className="font-heading font-bold text-[15px] mt-[26px]">필수 앱 · 교통카드</div>
@@ -59,15 +61,21 @@ export default function InfoView({ state, dispatch }: { state: AppState; dispatc
 
       <div className="font-heading font-bold text-[15px] mt-[26px]">현지 교통패스 정보</div>
       <div className="mt-2.5 flex flex-col gap-2">
-        {TRANSIT_PASSES.map((p) => (
-          <div key={p.name} className="card px-3.5 py-3">
-            <div className="flex justify-between gap-2">
-              <span className="text-sm font-bold">{p.name}</span>
-              <span className="text-[13px] font-extrabold text-accent">{fmtWon(p.price)}</span>
-            </div>
-            <div className="mt-0.5 text-xs text-ink-soft">{p.desc}</div>
+        {TRANSIT_PASSES.length === 0 ? (
+          <div className="card px-3.5 py-3 text-[13px] text-ink-soft leading-relaxed">
+            아직 목적지별 교통패스 정보는 준비되어 있지 않아요. 현지 여행 정보 사이트나 공식 관광청 페이지를 참고해주세요.
           </div>
-        ))}
+        ) : (
+          TRANSIT_PASSES.map((p) => (
+            <div key={p.name} className="card px-3.5 py-3">
+              <div className="flex justify-between gap-2">
+                <span className="text-sm font-bold">{p.name}</span>
+                <span className="text-[13px] font-extrabold text-accent">{fmtWon(p.price)}</span>
+              </div>
+              <div className="mt-0.5 text-xs text-ink-soft">{p.desc}</div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

@@ -96,18 +96,12 @@ export const CHECKLIST_DEFAULT: ChecklistItem[] = [
 ];
 
 export const ESSENTIALS = [
-  { name: 'ICOCA (교통카드)', desc: '간사이 지역 지하철/버스 통합 결제, 편의점 사용 가능' },
   { name: 'Google 지도', desc: '오프라인 지도 미리 다운로드 권장' },
-  { name: 'Ikidane Tourist Info', desc: '관광 정보 및 무료 와이파이 위치 안내' },
   { name: 'Papago', desc: '현지어 간단 번역' },
   { name: '포켓와이파이 / eSIM', desc: '데이터 사용량 많으면 무제한 포켓와이파이 추천' },
 ];
 
-export const TRANSIT_PASSES = [
-  { name: '오사카 주유패스 1일권', desc: '주요 관광지 무료 입장 + 지하철/버스 무제한', price: 2800 },
-  { name: '간사이 스루패스 (2일권)', desc: '간사이 전역 사철/버스 자유이용', price: 4380 },
-  { name: 'ICOCA 1일 승차권', desc: '오사카 시내 지하철/버스 자유이용', price: 620 },
-];
+export const TRANSIT_PASSES: { name: string; desc: string; price: number }[] = [];
 
 export const NEXT_TRIP_RECS = [
   { name: '후쿠오카', reason: '맛집 취향과 잘 맞는 미식 도시, 짧은 비행시간' },

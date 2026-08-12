@@ -66,7 +66,8 @@ export default function RecordView({ state, dispatch }: { state: AppState; dispa
       </div>
 
       <div className="font-heading font-bold text-[15px] mt-[26px]">다음 여행 추천</div>
-      <div className="mt-2.5 flex flex-col gap-2">
+      <p className="mt-1 text-[11px] text-ink-soft">일반적인 예시 추천이며, 지금 여행의 스타일과는 무관해요.</p>
+      <div className="mt-2 flex flex-col gap-2">
         {NEXT_TRIP_RECS.map((r) => (
           <div key={r.name} className="card px-3.5 py-3">
             <div className="text-sm font-bold">{r.name}</div>
@@ -76,6 +77,7 @@ export default function RecordView({ state, dispatch }: { state: AppState; dispa
       </div>
 
       <div className="font-heading font-bold text-[15px] mt-[18px]">다음 여행 저축 계산기</div>
+      <p className="mt-1 text-[11px] text-ink-soft">기본값은 방금 만든 여행의 예상 예산으로 채워져 있어요. 직접 수정할 수 있습니다.</p>
       <div className="section-label mt-2.5">목표 예상 비용</div>
       <input
         className="mt-1.5 w-full border border-border rounded-xl px-3.5 py-3.5 text-base"

@@ -1,7 +1,7 @@
 import {
   buildDays, buildLegs, sortAndReindex, CHECKLIST_DEFAULT, SHOPPING_LIST_DEFAULT,
   DEFAULT_EXPENSES, DEFAULT_FOOD_LOGS, RAIN_ALT_TARGET, RAIN_ALT_REPLACEMENT,
-  FLIGHT_OPTIONS, HOTEL_OPTIONS, CAR_OPTIONS,
+  FLIGHT_OPTIONS, HOTEL_OPTIONS, CAR_OPTIONS, computeBudget,
 } from './mockData';
 import type {
   BookingOption, Category, ChecklistItem, Companion, DayPlan, Expense, FoodLog, MyViewKey,
@@ -35,6 +35,7 @@ export interface AppState {
   bookingExpanded: { flight: boolean; hotel: boolean; car: boolean };
   addingPlace: boolean;
   newPlace: { time: string; name: string; category: Category };
+  shoppingForm: { name: string; category: string; price: string; note: string };
   isGenerating: boolean;
   generateError: string | null;
   bookings: { flight: BookingOption[]; hotel: BookingOption[]; car: BookingOption[] };
@@ -68,6 +69,7 @@ export const initialState: AppState = {
   bookingExpanded: { flight: false, hotel: false, car: false },
   addingPlace: false,
   newPlace: { time: '', name: '', category: '관광' },
+  shoppingForm: { name: '', category: '', price: '', note: '' },
   isGenerating: false,
   generateError: null,
   bookings: { flight: FLIGHT_OPTIONS, hotel: HOTEL_OPTIONS, car: CAR_OPTIONS },
@@ -108,6 +110,9 @@ export type Action =
   | { type: 'SELECT_FOOD_STARS'; value: number }
   | { type: 'ADD_FOOD_LOG' }
   | { type: 'TOGGLE_SHOPPING'; id: string }
+  | { type: 'SET_SHOPPING_FIELD'; field: 'name' | 'category' | 'price' | 'note'; value: string }
+  | { type: 'ADD_SHOPPING_ITEM' }
+  | { type: 'DELETE_SHOPPING_ITEM'; id: string }
   | { type: 'SET_SAVINGS_TARGET'; value: string }
   | { type: 'SAVINGS_MONTHS_MINUS' } | { type: 'SAVINGS_MONTHS_PLUS' }
   | { type: 'OPEN_MY_VIEW'; value: MyViewKey }
@@ -142,7 +147,8 @@ export function reducer(state: AppState, action: Action): AppState {
       return { ...state, stage: 'app', days: buildDays(state.form.pace), activeTab: 'home', activeDayIndex: 0 };
     case 'GENERATE_START':
       return { ...state, isGenerating: true, generateError: null };
-    case 'GENERATE_SUCCESS':
+    case 'GENERATE_SUCCESS': {
+      const { total } = computeBudget(action.bookings, 0, 0, 0, action.extraBudget);
       return {
         ...state,
         stage: 'app',
@@ -156,7 +162,14 @@ export function reducer(state: AppState, action: Action): AppState {
         selectedCar: 0,
         isGenerating: false,
         generateError: null,
+        expenses: [],
+        foodLogs: [],
+        shoppingList: [],
+        shoppingForm: { name: '', category: '', price: '', note: '' },
+        savingsTarget: String(total),
+        savingsMonths: 6,
       };
+    }
     case 'GENERATE_FAIL':
       return { ...state, isGenerating: false, generateError: action.message };
     case 'BACK_TO_ONBOARD':
@@ -270,6 +283,23 @@ export function reducer(state: AppState, action: Action): AppState {
     }
     case 'TOGGLE_SHOPPING':
       return { ...state, shoppingList: state.shoppingList.map((i) => (i.id === action.id ? { ...i, checked: !i.checked } : i)) };
+    case 'SET_SHOPPING_FIELD':
+      return { ...state, shoppingForm: { ...state.shoppingForm, [action.field]: action.value } };
+    case 'ADD_SHOPPING_ITEM': {
+      const { name, category, price, note } = state.shoppingForm;
+      if (!name) return state;
+      const amt = parseInt(String(price).replace(/[^0-9]/g, ''), 10) || 0;
+      return {
+        ...state,
+        shoppingList: [
+          ...state.shoppingList,
+          { id: `s${Date.now()}`, category: category || '기타', name, note: note || '', price: amt, checked: false },
+        ],
+        shoppingForm: { name: '', category: '', price: '', note: '' },
+      };
+    }
+    case 'DELETE_SHOPPING_ITEM':
+      return { ...state, shoppingList: state.shoppingList.filter((i) => i.id !== action.id) };
     case 'SET_SAVINGS_TARGET':
       return { ...state, savingsTarget: action.value };
     case 'SAVINGS_MONTHS_MINUS':
