@@ -59,6 +59,9 @@ export async function POST(req: NextRequest) {
     if (!body.destination || !body.days) {
       return NextResponse.json({ error: 'destination, days는 필수입니다.' }, { status: 400 });
     }
+    if (!body.travelerCount || body.travelerCount < 1) {
+      body.travelerCount = 2; // 안전 기본값
+    }
 
     const model = genAI.getGenerativeModel({
       model: MODEL_ID,

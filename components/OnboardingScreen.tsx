@@ -22,6 +22,8 @@ export default function OnboardingScreen({ state, dispatch }: { state: AppState;
           companionType: form.companion,
           styles: form.style,
           pace: form.pace,
+          startDate: form.startDate,
+          travelerCount: form.travelerCount,
         }),
       });
       const data = await res.json();
@@ -31,7 +33,7 @@ export default function OnboardingScreen({ state, dispatch }: { state: AppState;
           : '';
         throw new Error(issueText ? `${data?.error} — ${issueText}` : (data?.error ?? `요청 실패 (${res.status})`));
       }
-      const days = mapClaudeResponseToDays(data);
+      const days = mapClaudeResponseToDays(data, form.startDate, form.days);
       const bookings = mapClaudeBookings(data);
       const extraBudget = mapClaudeExtraBudget(data);
       const shoppingList = mapShoppingRecommendations(data);
@@ -74,6 +76,36 @@ export default function OnboardingScreen({ state, dispatch }: { state: AppState;
             </button>
           </div>
         </div>
+
+        <div className="section-label mt-5">출발일</div>
+        <input
+          type="date"
+          className="mt-2 w-full border border-border rounded-xl px-3.5 py-3.5 text-base bg-white"
+          value={form.startDate}
+          min={new Date().toISOString().slice(0, 10)}
+          onChange={(e) => dispatch({ type: 'SET_START_DATE', value: e.target.value })}
+        />
+        <p className="mt-1.5 text-[11px] text-ink-soft">일정에 표시되는 날짜는 이 출발일을 기준으로 자동 계산돼요.</p>
+
+        <div className="section-label mt-5">인원</div>
+        <div className="mt-2 flex items-center justify-between border border-border rounded-xl px-3.5 py-2.5 bg-white">
+          <span className="text-base font-bold">{form.travelerCount}명</span>
+          <div className="flex gap-2">
+            <button
+              className="w-8 h-8 rounded-lg border border-border bg-bg text-base"
+              onClick={() => dispatch({ type: 'TRAVELER_MINUS' })}
+            >
+              −
+            </button>
+            <button
+              className="w-8 h-8 rounded-lg border border-border bg-bg text-base"
+              onClick={() => dispatch({ type: 'TRAVELER_PLUS' })}
+            >
+              +
+            </button>
+          </div>
+        </div>
+        <p className="mt-1.5 text-[11px] text-ink-soft">예약 탭의 항공권·숙소·렌터카 가격은 이 인원 기준으로 계산돼요.</p>
 
         <div className="section-label mt-5">동행 유형</div>
         <div className="mt-2 flex flex-wrap gap-2">

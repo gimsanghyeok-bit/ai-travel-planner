@@ -49,6 +49,8 @@ export interface TripForm {
   companion: Companion;
   style: TravelStyle[];
   pace: Pace;
+  startDate: string; // YYYY-MM-DD, 실제 출발일. 일정의 각 날짜는 이 값 기준으로 코드에서 계산한다 (AI가 지어내지 않도록).
+  travelerCount: number; // 항공/숙소/렌터카 가격을 이 인원 기준으로 계산하도록 AI에게 명시적으로 전달한다.
 }
 
 export interface Expense {

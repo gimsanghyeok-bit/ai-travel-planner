@@ -56,6 +56,9 @@ export default function BookingTab({ state, dispatch }: { state: AppState; dispa
         <span className="section-label">예약 예상 비용</span>
         <span className="text-[15px] font-extrabold">{fmtWon(total)}</span>
       </div>
+      <div className="mt-2 bg-warn-bg text-warn rounded-xl px-3.5 py-3 text-[12px] leading-relaxed">
+        ⚠️ AI가 추정한 참고용 가격이에요. 실시간 예약 사이트와 연동된 게 아니라, 실제 가격과 다를 수 있어요. 예약 전 항공/호텔 사이트에서 꼭 확인해주세요.
+      </div>
 
       <BookingSection
         title="항공권 추천"

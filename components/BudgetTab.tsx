@@ -14,6 +14,7 @@ export default function BudgetTab({ state, dispatch }: { state: AppState; dispat
     <div className="flex-1 overflow-auto px-5 pt-1 pb-6">
       <div className="section-label">예상 총 예산</div>
       <div className="font-heading font-bold text-[26px] mt-2">{fmtWon(total)}</div>
+      <p className="mt-1 text-[11px] text-ink-soft">AI가 추정한 참고용 예산이에요. 항공/숙소는 실시간 가격이 아니니 예약 전 실제 사이트에서 확인하세요.</p>
       <div className="mt-3 flex flex-col gap-2.5">
         {Object.entries(budget).map(([label, amt]) => (
           <div key={label}>

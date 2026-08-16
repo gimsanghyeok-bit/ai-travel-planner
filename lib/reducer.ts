@@ -8,6 +8,14 @@ import type {
   Pace, ShoppingItem, TabKey, TravelStyle, TripForm,
 } from './types';
 
+// 출발일 기본값: 오늘로부터 7일 뒤 (로컬 타임존 기준, YYYY-MM-DD)
+function getDefaultStartDate(): string {
+  const d = new Date();
+  d.setDate(d.getDate() + 7);
+  const offsetMs = d.getTimezoneOffset() * 60000;
+  return new Date(d.getTime() - offsetMs).toISOString().slice(0, 10);
+}
+
 export interface AppState {
   stage: 'onboard' | 'app';
   activeTab: TabKey;
@@ -52,7 +60,7 @@ export const initialState: AppState = {
   myViewKey: null,
   activeDayIndex: 0,
   tipOpenKey: null,
-  form: { destination: '오사카', nights: 3, days: 4, companion: '연인', style: ['맛집', '핫플'], pace: 'normal' },
+  form: { destination: '오사카', nights: 3, days: 4, companion: '연인', style: ['맛집', '핫플'], pace: 'normal', startDate: getDefaultStartDate(), travelerCount: 2 },
   days: null,
   expenses: DEFAULT_EXPENSES,
   expenseForm: { label: '', amount: '', payer: '민준' },
@@ -75,7 +83,6 @@ export const initialState: AppState = {
   shoppingForm: { name: '', category: '', price: '', note: '' },
   isGenerating: false,
   generateError: null,
-  // AI 생성 전에는 오사카 예시 데이터로 채워둠 (온보딩 화면 자체는 예산/예약 탭을 안 쓰므로 문제 없음)
   bookings: { flight: FLIGHT_OPTIONS, hotel: HOTEL_OPTIONS, car: CAR_OPTIONS },
   extraBudget: { food: 320000, admission: 150000, localTransit: 90000 },
   companions: ['민준', '서연'],
@@ -86,6 +93,8 @@ export const initialState: AppState = {
 export type Action =
   | { type: 'NIGHTS_MINUS' } | { type: 'NIGHTS_PLUS' }
   | { type: 'SET_DESTINATION'; value: string }
+  | { type: 'SET_START_DATE'; value: string }
+  | { type: 'TRAVELER_MINUS' } | { type: 'TRAVELER_PLUS' }
   | { type: 'SELECT_COMPANION'; value: Companion }
   | { type: 'TOGGLE_STYLE'; value: TravelStyle }
   | { type: 'SELECT_PACE'; value: Pace }
@@ -144,6 +153,12 @@ export function reducer(state: AppState, action: Action): AppState {
       return { ...state, form: { ...state.form, nights: state.form.nights + 1, days: state.form.days + 1 } };
     case 'SET_DESTINATION':
       return { ...state, form: { ...state.form, destination: action.value } };
+    case 'SET_START_DATE':
+      return { ...state, form: { ...state.form, startDate: action.value } };
+    case 'TRAVELER_MINUS':
+      return { ...state, form: { ...state.form, travelerCount: Math.max(1, state.form.travelerCount - 1) } };
+    case 'TRAVELER_PLUS':
+      return { ...state, form: { ...state.form, travelerCount: Math.min(20, state.form.travelerCount + 1) } };
     case 'SELECT_COMPANION':
       return { ...state, form: { ...state.form, companion: action.value } };
     case 'TOGGLE_STYLE': {

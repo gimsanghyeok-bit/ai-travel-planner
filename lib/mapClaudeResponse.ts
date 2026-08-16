@@ -64,14 +64,27 @@ export function mapClaudeExtraBudget(res: ClaudeItineraryResponse): { food: numb
   };
 }
 
-/** Claude API(app/api/generate-itinerary) 응답 JSON을 앱 내부 DayPlan[] 형태로 변환한다. */
-export function mapClaudeResponseToDays(res: ClaudeItineraryResponse): DayPlan[] {
-  return res.days.map((d) => {
-    const dateObj = new Date(d.date);
-    const dateLabel = isNaN(dateObj.getTime())
-      ? d.date
+/** Claude API(app/api/generate-itinerary) 응답 JSON을 앱 내부 DayPlan[] 형태로 변환한다.
+ *  날짜는 AI가 만든 값을 신뢰하지 않고, 사용자가 고른 실제 출발일(startDate) 기준으로 코드에서 정확히 계산한다.
+ *  (AI에게 날짜 계산을 맡기면 몇 달 전/후로 지어내는 경우가 있어 신뢰할 수 없다.)
+ *  expectedDayCount를 주면, AI가 일부 날짜를 빠뜨려도 그 자리를 빈 플레이스홀더로 채워서
+ *  탭 개수(=사용자가 요청한 일수)가 항상 맞도록 보정한다.
+ */
+export function mapClaudeResponseToDays(res: ClaudeItineraryResponse, startDate?: string, expectedDayCount?: number): DayPlan[] {
+  function calcDateLabel(dayIndex: number, fallbackDate: string): string {
+    if (startDate) {
+      const base = new Date(startDate + 'T00:00:00');
+      base.setDate(base.getDate() + (dayIndex - 1));
+      return `${base.getMonth() + 1}/${base.getDate()} (${WEEKDAY[base.getDay()]})`;
+    }
+    const dateObj = new Date(fallbackDate);
+    return isNaN(dateObj.getTime())
+      ? fallbackDate
       : `${dateObj.getMonth() + 1}/${dateObj.getDate()} (${WEEKDAY[dateObj.getDay()]})`;
+  }
 
+  const byIndex = new Map<number, DayPlan>();
+  res.days.forEach((d) => {
     const places = d.places.map((p, i) => ({
       key: `${d.dayIndex}-${i}`,
       order: p.order,
@@ -88,16 +101,38 @@ export function mapClaudeResponseToDays(res: ClaudeItineraryResponse): DayPlan[]
       },
     }));
 
-    return {
+    byIndex.set(d.dayIndex, {
       label: `${d.dayIndex}일차`,
-      date: dateLabel,
+      date: calcDateLabel(d.dayIndex, d.date),
       weather: d.weatherSummary,
       weatherAlert: d.weatherAlert,
       breakAlert: d.breakTimeAlert,
       places,
       legs: buildLegs(places),
-    };
+    });
   });
+
+  const highestIndex = res.days.reduce((max, d) => Math.max(max, d.dayIndex), 0);
+  const total = expectedDayCount ?? highestIndex;
+
+  const result: DayPlan[] = [];
+  for (let i = 1; i <= total; i++) {
+    const existing = byIndex.get(i);
+    if (existing) {
+      result.push(existing);
+    } else {
+      result.push({
+        label: `${i}일차`,
+        date: calcDateLabel(i, ''),
+        weather: '',
+        weatherAlert: null,
+        breakAlert: 'AI가 이 날짜의 일정을 만들지 못했어요. 아래 "+ 일정 추가"로 직접 채워주세요.',
+        places: [],
+        legs: [],
+      });
+    }
+  }
+  return result;
 }
 
 /** AI가 목적지 기준으로 추천한 쇼핑 아이템을 화면용 ShoppingItem[]으로 변환 (가격은 통화가 달라 비워둠) */
