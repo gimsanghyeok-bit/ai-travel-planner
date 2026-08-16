@@ -2,7 +2,7 @@
 
 import type { Dispatch } from 'react';
 import type { Action, AppState } from '@/lib/reducer';
-import { fmtWon, NEXT_TRIP_RECS } from '@/lib/mockData';
+import { fmtWon } from '@/lib/mockData';
 
 export default function RecordView({ state, dispatch }: { state: AppState; dispatch: Dispatch<Action> }) {
   const savingsTargetNum = parseInt(String(state.savingsTarget).replace(/[^0-9]/g, ''), 10) || 0;
@@ -66,9 +66,11 @@ export default function RecordView({ state, dispatch }: { state: AppState; dispa
       </div>
 
       <div className="font-heading font-bold text-[15px] mt-[26px]">다음 여행 추천</div>
-      <p className="mt-1 text-[11px] text-ink-soft">일반적인 예시 추천이며, 지금 여행의 스타일과는 무관해요.</p>
+      <p className="mt-1 text-[11px] text-ink-soft">
+        {state.form.companion} · {state.form.style.join(', ')} · {state.form.nights}박{state.form.days}일 조건을 반영한 AI 추천이에요.
+      </p>
       <div className="mt-2 flex flex-col gap-2">
-        {NEXT_TRIP_RECS.map((r) => (
+        {state.nextTripRecs.map((r) => (
           <div key={r.name} className="card px-3.5 py-3">
             <div className="text-sm font-bold">{r.name}</div>
             <div className="mt-0.5 text-xs text-ink-soft">{r.reason}</div>

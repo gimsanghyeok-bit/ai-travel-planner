@@ -3,7 +3,7 @@
 import type { Dispatch } from 'react';
 import type { Action, AppState } from '@/lib/reducer';
 import { COMPANIONS, PACE_DESC, PACE_LABELS, STYLES } from '@/lib/mockData';
-import { mapClaudeBookings, mapClaudeExtraBudget, mapClaudeResponseToDays } from '@/lib/mapClaudeResponse';
+import { mapClaudeBookings, mapClaudeExtraBudget, mapClaudeResponseToDays, mapNextTripRecommendations, mapShoppingRecommendations } from '@/lib/mapClaudeResponse';
 import type { Pace } from '@/lib/types';
 
 export default function OnboardingScreen({ state, dispatch }: { state: AppState; dispatch: Dispatch<Action> }) {
@@ -34,7 +34,9 @@ export default function OnboardingScreen({ state, dispatch }: { state: AppState;
       const days = mapClaudeResponseToDays(data);
       const bookings = mapClaudeBookings(data);
       const extraBudget = mapClaudeExtraBudget(data);
-      dispatch({ type: 'GENERATE_SUCCESS', days, bookings, extraBudget });
+      const shoppingList = mapShoppingRecommendations(data);
+      const nextTripRecs = mapNextTripRecommendations(data);
+      dispatch({ type: 'GENERATE_SUCCESS', days, bookings, extraBudget, shoppingList, nextTripRecs });
     } catch (err) {
       const message = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
       dispatch({ type: 'GENERATE_FAIL', message: `AI 일정 생성에 실패했습니다: ${message}` });
@@ -104,7 +106,7 @@ export default function OnboardingScreen({ state, dispatch }: { state: AppState;
           {(['tight', 'normal', 'relaxed'] as Pace[]).map((p) => (
             <button
               key={p}
-              className={`flex-1 rounded-xl px-2 py-3 text-xs font-bold text-center border ${
+              className={`flex-1 rounded-xl px-2 py-3 text-xs font-bold text-center border break-keep leading-snug ${
                 form.pace === p ? 'border-accent bg-accent text-white' : 'border-border bg-white text-ink'
               }`}
               onClick={() => dispatch({ type: 'SELECT_PACE', value: p })}

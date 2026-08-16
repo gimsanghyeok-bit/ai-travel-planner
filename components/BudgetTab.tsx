@@ -45,6 +45,35 @@ export default function BudgetTab({ state, dispatch }: { state: AppState; dispat
       </div>
 
       <div className="mt-3.5 card p-3.5">
+        <div className="text-[13px] font-bold mb-2.5">동행자 등록</div>
+        <div className="flex gap-2">
+          <input
+            className="flex-1 border border-border rounded-[10px] px-2.5 py-2.5 text-[13px]"
+            placeholder="이름 입력 (예: 민준)"
+            value={state.companionInput}
+            onChange={(e) => dispatch({ type: 'SET_COMPANION_INPUT', value: e.target.value })}
+            onKeyDown={(e) => { if (e.key === 'Enter') dispatch({ type: 'ADD_COMPANION' }); }}
+          />
+          <button
+            onClick={() => dispatch({ type: 'ADD_COMPANION' })}
+            className="bg-accent text-white rounded-[10px] px-4 py-2.5 text-[13px] font-bold shrink-0"
+          >
+            추가
+          </button>
+        </div>
+        {state.companions.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-2.5">
+            {state.companions.map((name) => (
+              <span key={name} className="chip flex items-center gap-1.5" style={{ paddingRight: 8 }}>
+                {name}
+                <button onClick={() => dispatch({ type: 'DELETE_COMPANION', name })} className="text-ink-disabled">×</button>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="mt-3 card p-3.5">
         <div className="text-[13px] font-bold mb-2.5">지출 추가</div>
         <div className="flex gap-2">
           <input
@@ -60,23 +89,27 @@ export default function BudgetTab({ state, dispatch }: { state: AppState; dispat
             onChange={(e) => dispatch({ type: 'SET_EXPENSE_FIELD', field: 'amount', value: e.target.value })}
           />
         </div>
-        <div className="flex gap-2 mt-2 items-center">
-          {['민준', '서연'].map((p) => (
+        {state.companions.length === 0 ? (
+          <div className="mt-2.5 text-xs text-ink-soft">먼저 위에서 동행자를 등록해주세요.</div>
+        ) : (
+          <div className="flex gap-2 mt-2 items-center flex-wrap">
+            {state.companions.map((p) => (
+              <button
+                key={p}
+                className={`chip ${state.expenseForm.payer === p ? 'chip-on' : ''}`}
+                onClick={() => dispatch({ type: 'SELECT_PAYER', value: p })}
+              >
+                {p}
+              </button>
+            ))}
             <button
-              key={p}
-              className={`chip ${state.expenseForm.payer === p ? 'chip-on' : ''}`}
-              onClick={() => dispatch({ type: 'SELECT_PAYER', value: p })}
+              onClick={() => dispatch({ type: 'ADD_EXPENSE' })}
+              className="ml-auto bg-accent text-white rounded-[10px] px-4 py-2.5 text-[13px] font-bold"
             >
-              {p}
+              추가
             </button>
-          ))}
-          <button
-            onClick={() => dispatch({ type: 'ADD_EXPENSE' })}
-            className="ml-auto bg-accent text-white rounded-[10px] px-4 py-2.5 text-[13px] font-bold"
-          >
-            추가
-          </button>
-        </div>
+          </div>
+        )}
       </div>
 
       <div className="section-label mt-5">{payers.length}인 정산</div>

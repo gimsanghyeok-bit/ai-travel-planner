@@ -1,7 +1,7 @@
 import {
   buildDays, buildLegs, sortAndReindex, CHECKLIST_DEFAULT, SHOPPING_LIST_DEFAULT,
   DEFAULT_EXPENSES, DEFAULT_FOOD_LOGS, RAIN_ALT_TARGET, RAIN_ALT_REPLACEMENT,
-  FLIGHT_OPTIONS, HOTEL_OPTIONS, CAR_OPTIONS, computeBudget,
+  FLIGHT_OPTIONS, HOTEL_OPTIONS, CAR_OPTIONS, computeBudget, NEXT_TRIP_RECS,
 } from './mockData';
 import type {
   BookingOption, Category, ChecklistItem, Companion, DayPlan, Expense, FoodLog, MyViewKey,
@@ -40,6 +40,9 @@ export interface AppState {
   generateError: string | null;
   bookings: { flight: BookingOption[]; hotel: BookingOption[]; car: BookingOption[] };
   extraBudget: { food: number; admission: number; localTransit: number };
+  companions: string[];
+  companionInput: string;
+  nextTripRecs: { name: string; reason: string }[];
 }
 
 export const initialState: AppState = {
@@ -72,8 +75,12 @@ export const initialState: AppState = {
   shoppingForm: { name: '', category: '', price: '', note: '' },
   isGenerating: false,
   generateError: null,
+  // AI 생성 전에는 오사카 예시 데이터로 채워둠 (온보딩 화면 자체는 예산/예약 탭을 안 쓰므로 문제 없음)
   bookings: { flight: FLIGHT_OPTIONS, hotel: HOTEL_OPTIONS, car: CAR_OPTIONS },
   extraBudget: { food: 320000, admission: 150000, localTransit: 90000 },
+  companions: ['민준', '서연'],
+  companionInput: '',
+  nextTripRecs: NEXT_TRIP_RECS,
 };
 
 export type Action =
@@ -84,7 +91,7 @@ export type Action =
   | { type: 'SELECT_PACE'; value: Pace }
   | { type: 'GENERATE' } | { type: 'BACK_TO_ONBOARD' }
   | { type: 'GENERATE_START' }
-  | { type: 'GENERATE_SUCCESS'; days: DayPlan[]; bookings: AppState['bookings']; extraBudget: AppState['extraBudget'] }
+  | { type: 'GENERATE_SUCCESS'; days: DayPlan[]; bookings: AppState['bookings']; extraBudget: AppState['extraBudget']; shoppingList: ShoppingItem[]; nextTripRecs: AppState['nextTripRecs'] }
   | { type: 'GENERATE_FAIL'; message: string }
   | { type: 'SET_TAB'; value: TabKey }
   | { type: 'GO_HOME_ITINERARY' } | { type: 'GO_TAB_BOOKING' } | { type: 'GO_TAB_BUDGET' } | { type: 'GO_HOME_CHECKLIST' }
@@ -115,6 +122,9 @@ export type Action =
   | { type: 'DELETE_SHOPPING_ITEM'; id: string }
   | { type: 'SET_SAVINGS_TARGET'; value: string }
   | { type: 'SAVINGS_MONTHS_MINUS' } | { type: 'SAVINGS_MONTHS_PLUS' }
+  | { type: 'SET_COMPANION_INPUT'; value: string }
+  | { type: 'ADD_COMPANION' }
+  | { type: 'DELETE_COMPANION'; name: string }
   | { type: 'OPEN_MY_VIEW'; value: MyViewKey }
   | { type: 'MY_BACK' }
   | { type: 'SHARE'; value: 'pdf' | 'notion' | 'kakao' };
@@ -164,10 +174,13 @@ export function reducer(state: AppState, action: Action): AppState {
         generateError: null,
         expenses: [],
         foodLogs: [],
-        shoppingList: [],
+        shoppingList: action.shoppingList,
         shoppingForm: { name: '', category: '', price: '', note: '' },
         savingsTarget: String(total),
         savingsMonths: 6,
+        companions: [],
+        companionInput: '',
+        nextTripRecs: action.nextTripRecs.length > 0 ? action.nextTripRecs : state.nextTripRecs,
       };
     }
     case 'GENERATE_FAIL':
@@ -306,6 +319,24 @@ export function reducer(state: AppState, action: Action): AppState {
       return { ...state, savingsMonths: Math.max(1, state.savingsMonths - 1) };
     case 'SAVINGS_MONTHS_PLUS':
       return { ...state, savingsMonths: state.savingsMonths + 1 };
+    case 'SET_COMPANION_INPUT':
+      return { ...state, companionInput: action.value };
+    case 'ADD_COMPANION': {
+      const name = state.companionInput.trim();
+      if (!name || state.companions.includes(name)) return { ...state, companionInput: '' };
+      const companions = [...state.companions, name];
+      return {
+        ...state,
+        companions,
+        companionInput: '',
+        expenseForm: { ...state.expenseForm, payer: state.expenseForm.payer || name },
+      };
+    }
+    case 'DELETE_COMPANION': {
+      const companions = state.companions.filter((c) => c !== action.name);
+      const payer = state.expenseForm.payer === action.name ? (companions[0] || '') : state.expenseForm.payer;
+      return { ...state, companions, expenseForm: { ...state.expenseForm, payer } };
+    }
     case 'OPEN_MY_VIEW':
       return { ...state, myViewKey: action.value };
     case 'MY_BACK':

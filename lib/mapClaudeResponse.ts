@@ -1,4 +1,4 @@
-import type { BookingOption, Category, DayPlan } from './types';
+import type { BookingOption, Category, DayPlan, ShoppingItem } from './types';
 import { buildLegs } from './mockData';
 
 const CATEGORY_MAP: Record<string, Category> = {
@@ -39,6 +39,8 @@ export interface ClaudeItineraryResponse {
     flight: number; hotel: number; car: number;
     food: number; admission: number; localTransit: number;
   };
+  shoppingRecommendations: { name: string; note: string }[];
+  nextTripRecommendations: { name: string; reason: string }[];
 }
 
 /** Claude 응답의 bookings(항공/숙소/렌터카)를 화면에서 쓰는 BookingOption[] 형태로 변환 (description -> desc) */
@@ -96,4 +98,21 @@ export function mapClaudeResponseToDays(res: ClaudeItineraryResponse): DayPlan[]
       legs: buildLegs(places),
     };
   });
+}
+
+/** AI가 목적지 기준으로 추천한 쇼핑 아이템을 화면용 ShoppingItem[]으로 변환 (가격은 통화가 달라 비워둠) */
+export function mapShoppingRecommendations(res: ClaudeItineraryResponse): ShoppingItem[] {
+  return (res.shoppingRecommendations ?? []).map((s, i) => ({
+    id: `ai-shop-${i}`,
+    category: 'AI 추천',
+    name: s.name,
+    note: s.note || '',
+    price: 0,
+    checked: false,
+  }));
+}
+
+/** 이번 여행 조건(동행유형·스타일·페이스)을 반영한 다음 여행지 추천을 변환 */
+export function mapNextTripRecommendations(res: ClaudeItineraryResponse): { name: string; reason: string }[] {
+  return (res.nextTripRecommendations ?? []).map((r) => ({ name: r.name, reason: r.reason }));
 }

@@ -10,6 +10,8 @@ JSON을 생성합니다.
 - 각 장소 사이 이동 수단과 예상 이동 시간을 현실적으로 추정합니다.
 - 관광지/식당의 휴무일, 브레이크타임, 매표 마감 시간이 알려진 경우 breakTimeAlert에 반드시 기재합니다.
 - 각 장소에 인플루언서/블로그 리뷰 기반 팁(필수메뉴, 웨이팅 팁, 할인 정보)을 요약합니다. 확실하지 않으면 빈 문자열로 둡니다.
+- shoppingRecommendations: 이 목적지를 여행할 때 실제로 여행자들이 자주 사는 대표 품목 4~6개를 추천합니다 (과자/기념품/생활용품 등). 브랜드명을 확신할 수 없으면 카테고리 수준으로 일반화해서 씁니다 (예: "현지 인기 커피 원두").
+- nextTripRecommendations: 이번 여행의 동행 유형(companionType), 여행 스타일(styles), 페이스(pace)를 참고해서, 다음에 가면 잘 맞을 만한 여행지 2~3곳을 추천하고 그 이유를 이번 조건과 연결해서 설명합니다. 이번 목적지와는 다른 곳이어야 합니다.
 - 아래 JSON 스키마 외의 텍스트를 출력하지 않습니다.
 
 JSON 스키마:
@@ -40,7 +42,9 @@ JSON 스키마:
     "hotel": [{ "name": "string", "description": "string", "price": 0 }],
     "car": [{ "name": "string", "description": "string", "price": 0 }]
   },
-  "budgetEstimate": { "flight": 0, "hotel": 0, "car": 0, "food": 0, "admission": 0, "localTransit": 0 }
+  "budgetEstimate": { "flight": 0, "hotel": 0, "car": 0, "food": 0, "admission": 0, "localTransit": 0 },
+  "shoppingRecommendations": [{ "name": "string", "note": "string" }],
+  "nextTripRecommendations": [{ "name": "string", "reason": "string" }]
 }`;
 
 export interface GenerateItineraryInput {
