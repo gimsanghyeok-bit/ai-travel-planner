@@ -64,11 +64,11 @@ export const PACE_DESC: Record<Pace, string> = {
   relaxed: '하루 3곳 이하, 여유롭게 머무는 힐링 코스입니다.',
 };
 export const COMPANIONS: Companion[] = ['혼자', '연인', '친구', '가족'];
-export const STYLES: TravelStyle[] = ['맛집', '핫플', '힐링', '쇼핑'];
+export const STYLES: TravelStyle[] = ['맛집', '핫플', '힐링', '쇼핑', '골프'];
 export const CATEGORY_COLOR: Record<string, string> = {
-  관광: '#5F7A55', 식사: '#C1502E', 쇼핑: '#5B4B8A', 힐링: '#1F7A6C', 핫플: '#C1502E', 이동: '#7A6F65',
+  관광: '#5F7A55', 식사: '#C1502E', 쇼핑: '#5B4B8A', 힐링: '#1F7A6C', 핫플: '#C1502E', 골프: '#2F6B33', 이동: '#7A6F65',
 };
-export const PLACE_CATEGORIES = ['관광', '식사', '쇼핑', '힐링', '핫플', '이동'];
+export const PLACE_CATEGORIES = ['관광', '식사', '쇼핑', '힐링', '핫플', '골프', '이동'];
 
 export const MY_MENU = [
   { key: 'info', label: '여행 정보', sub: '체크리스트 · 환율 · 필수앱 · 교통패스' },

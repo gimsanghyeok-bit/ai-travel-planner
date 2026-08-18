@@ -7,6 +7,7 @@ const CATEGORY_MAP: Record<string, Category> = {
   shopping: '쇼핑',
   healing: '힐링',
   hotspot: '핫플',
+  golf: '골프',
   transit: '이동',
 };
 

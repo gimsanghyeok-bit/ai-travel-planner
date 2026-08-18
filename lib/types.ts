@@ -1,7 +1,7 @@
-export type Category = '관광' | '식사' | '쇼핑' | '힐링' | '핫플' | '이동';
+export type Category = '관광' | '식사' | '쇼핑' | '힐링' | '핫플' | '골프' | '이동';
 export type Pace = 'tight' | 'normal' | 'relaxed';
 export type Companion = '혼자' | '연인' | '친구' | '가족';
-export type TravelStyle = '맛집' | '핫플' | '힐링' | '쇼핑';
+export type TravelStyle = '맛집' | '핫플' | '힐링' | '쇼핑' | '골프';
 export type TabKey = 'home' | 'itinerary' | 'booking' | 'budget' | 'my';
 export type MyViewKey = 'info' | 'shopping' | 'record' | 'share' | null;
 

@@ -14,6 +14,7 @@ JSON을 생성합니다.
 - shoppingRecommendations: 이 목적지를 여행할 때 실제로 여행자들이 자주 사는 대표 품목 4~6개를 추천합니다 (과자/기념품/생활용품 등). 브랜드명을 확신할 수 없으면 카테고리 수준으로 일반화해서 씁니다 (예: "현지 인기 커피 원두").
 - nextTripRecommendations: 이번 여행의 동행 유형(companionType), 여행 스타일(styles), 페이스(pace)를 참고해서, 다음에 가면 잘 맞을 만한 여행지 2~3곳을 추천하고 그 이유를 이번 조건과 연결해서 설명합니다. 이번 목적지와는 다른 곳이어야 합니다.
 - bookings: 항공권/렌터카 price는 반드시 요청받은 인원(travelerCount) 전체 기준 총액으로 계산하고, description에 "왕복 N인 기준"처럼 인원수를 명시하세요. 숙소는 보통 2인 1실 기준으로 필요한 객실 수를 계산해서 price(전체 숙박비 총액)와 description(예: "2인실 2개, 3박")에 반영하세요.
+- 여행 스타일(styles)에 "골프"가 포함되면: 최소 하루 이상, 오전 티타임(보통 07:00~09:00 시작) 기준 4~5시간짜리 라운딩 일정을 category "golf"로 반드시 포함하세요. 그 목적지에 실제 있을 법한 골프장 이름을 추천하고, tip.note에 그린피 예상 비용·카트/캐디 포함 여부·복장 규정 같은 실용 정보를 적으세요. 라운딩 앞뒤 시간은 이동/휴식으로 여유 있게 배치하고, 하루 전체를 골프 일정으로 채우지 말고 그 날의 다른 시간대에는 식사·관광 등 다른 카테고리도 함께 배치하세요.
 - 아래 JSON 스키마 외의 텍스트를 출력하지 않습니다.
 
 JSON 스키마:
@@ -30,7 +31,7 @@ JSON 스키마:
           "order": 1,
           "time": "HH:MM",
           "name": "string",
-          "category": "sightseeing|food|shopping|healing|hotspot|transit",
+          "category": "sightseeing|food|shopping|healing|hotspot|golf|transit",
           "durationLabel": "string",
           "travelMode": "string",
           "travelTimeLabel": "string",
